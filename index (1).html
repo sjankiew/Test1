@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบเก็บข้อมูลเกษตรกรผู้ปลูกข้าวโพดเลี้ยงสัตว์</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-900: #1a3a2a;
+    --green-800: #1e4d35;
+    --green-700: #246040;
+    --green-600: #2d7a52;
+    --green-500: #38936a;
+    --green-400: #4aad82;
+    --green-200: #a8ddc2;
+    --green-100: #d4f0e3;
+    --green-50:  #edf8f3;
+    --gold-500:  #c9a84c;
+    --gold-400:  #d9bc72;
+    --gold-100:  #faf3dc;
+    --neutral-900: #1c1c1e;
+    --neutral-800: #2c2c2e;
+    --neutral-700: #3a3a3c;
+    --neutral-600: #48484a;
+    --neutral-400: #8e8e93;
+    --neutral-200: #d1d1d6;
+    --neutral-100: #f2f2f7;
+    --neutral-50:  #f9f9fb;
+    --white: #ffffff;
+    --danger: #d9534f;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --nav-width: 240px;
+    --header-h: 60px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', 'IBM Plex Sans Thai', sans-serif;
+    background: var(--neutral-100);
+    color: var(--neutral-900);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .app-header {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+    background: var(--green-800);
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 24px; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .header-icon { width:36px;height:36px;background:var(--gold-500);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+  .header-title { color:var(--white);font-size:16px;font-weight:600; }
+  .header-subtitle { color:var(--green-200);font-size:12px;margin-top:1px; }
+  .header-id-badge { margin-left:auto;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:var(--white);padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500;letter-spacing:0.04em; }
+
+  /* LAYOUT */
+  .app-layout { display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h)); }
+
+  /* NAV */
+  .nav-pane { width:var(--nav-width);background:var(--white);border-right:1px solid var(--neutral-200);position:fixed;top:var(--header-h);left:0;height:calc(100vh - var(--header-h));overflow-y:auto;z-index:50;padding:20px 0 40px; }
+  .nav-label { font-size:10px;font-weight:700;color:var(--neutral-400);letter-spacing:0.12em;text-transform:uppercase;padding:0 18px 10px; }
+  .nav-item { display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;border-left:3px solid transparent;transition:all 0.18s;color:var(--neutral-600);font-size:14px;user-select:none; }
+  .nav-item:hover { background:var(--green-50);color:var(--green-700); }
+  .nav-item.active { background:var(--green-50);border-left-color:var(--green-600);color:var(--green-800);font-weight:600; }
+  .nav-item.locked { color:var(--neutral-300);cursor:not-allowed; }
+  .nav-item.locked:hover { background:none; }
+  .nav-num { width:22px;height:22px;border-radius:50%;background:var(--neutral-100);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:var(--neutral-400); }
+  .nav-item.active .nav-num { background:var(--green-600);color:var(--white); }
+  .nav-item.done .nav-num { background:var(--green-100);color:var(--green-700); }
+  .nav-lock-icon { margin-left:auto;font-size:12px;opacity:0.4; }
+
+  /* MAIN */
+  .main-content { margin-left:var(--nav-width);flex:1;padding:32px 32px 80px;max-width:860px; }
+
+  /* CARD */
+  .form-card { background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);border:1px solid var(--neutral-200);overflow:hidden;animation:slideIn 0.25s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .form-card-header { background:linear-gradient(135deg,var(--green-800) 0%,var(--green-700) 100%);padding:24px 32px;display:flex;align-items:center;gap:16px; }
+  .form-card-icon { width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0; }
+  .form-card-title { color:var(--white);font-size:20px;font-weight:600; }
+  .form-card-desc { color:var(--green-200);font-size:13px;margin-top:2px; }
+  .form-body { padding:32px; }
+
+  /* DIVIDER */
+  .section-divider { display:flex;align-items:center;gap:12px;margin:28px 0 20px; }
+  .section-divider:first-child { margin-top:0; }
+  .section-divider-line { flex:1;height:1px;background:var(--neutral-200); }
+  .section-divider-label { font-size:12px;font-weight:700;color:var(--green-700);letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;background:var(--green-50);padding:3px 12px;border-radius:20px;border:1px solid var(--green-200); }
+
+  /* GRID */
+  .form-grid { display:grid;gap:20px; }
+  .col-2 { grid-template-columns:1fr 1fr; }
+  .col-3 { grid-template-columns:1fr 1fr 1fr; }
+  .col-full { grid-column:1 / -1; }
+
+  /* FIELDS */
+  .field { display:flex;flex-direction:column;gap:6px; }
+  .field-label { font-size:13px;font-weight:600;color:var(--neutral-700);display:flex;align-items:center;gap:4px; }
+  .field-label .req { color:var(--danger);font-size:14px; }
+  .field-hint { font-size:11px;color:var(--neutral-400);margin-top:-3px; }
+
+  input[type="text"],input[type="number"],input[type="tel"],textarea,select {
+    width:100%;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);padding:10px 14px;
+    font-family:inherit;font-size:14px;color:var(--neutral-900);background:var(--white);
+    transition:border-color 0.15s,box-shadow 0.15s;outline:none;appearance:none;-webkit-appearance:none;
+  }
+  input:focus,textarea:focus,select:focus { border-color:var(--green-500);box-shadow:0 0 0 3px rgba(56,147,106,0.12); }
+  input:disabled,select:disabled { background:var(--neutral-100);color:var(--neutral-400);cursor:not-allowed; }
+  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px; }
+  textarea { resize:vertical;min-height:80px; }
+  .input-readonly { background:var(--green-50)!important;border-color:var(--green-200)!important;color:var(--green-800)!important;font-weight:600;cursor:default; }
+
+  /* COORD */
+  .coord-group { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  .coord-hint { grid-column:1/-1;font-size:11px;color:var(--neutral-400);background:var(--neutral-50);border:1px solid var(--neutral-200);border-radius:var(--radius-sm);padding:8px 12px;display:none;align-items:center;gap:6px; }
+  .coord-hint.active { display:flex;background:var(--green-50);border-color:var(--green-200);color:var(--green-700); }
+
+  /* CHECKBOX */
+  .checkbox-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px; }
+  .checkbox-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;user-select:none;font-size:13.5px;color:var(--neutral-700); }
+  .checkbox-item:hover { border-color:var(--green-400);background:var(--green-50); }
+  .checkbox-item.checked { border-color:var(--green-500);background:var(--green-50);color:var(--green-800);font-weight:500; }
+  .checkbox-item input[type="checkbox"] { width:16px;height:16px;accent-color:var(--green-600);flex-shrink:0;margin:0;padding:0;border:none;box-shadow:none; }
+
+  /* VALIDATION */
+  .field.error input,.field.error select,.field.error textarea { border-color:var(--danger);box-shadow:0 0 0 3px rgba(217,83,79,0.1); }
+  .field-error-msg { font-size:12px;color:var(--danger);display:none; }
+  .field.error .field-error-msg { display:block; }
+
+  /* SPINNER */
+  .spinner { width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* FOOTER */
+  .form-footer { padding:20px 32px;border-top:1px solid var(--neutral-200);display:flex;align-items:center;justify-content:space-between;background:var(--neutral-50); }
+  .footer-info { font-size:12px;color:var(--neutral-400); }
+  .footer-info strong { color:var(--neutral-600); }
+
+  /* BUTTONS */
+  .btn { display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all 0.18s; }
+  .btn-primary { background:var(--green-600);color:var(--white);box-shadow:0 2px 8px rgba(45,122,82,0.25); }
+  .btn-primary:hover { background:var(--green-700); }
+  .btn-primary:disabled { background:var(--neutral-200);color:var(--neutral-400);box-shadow:none;cursor:not-allowed; }
+  .btn-secondary { background:var(--white);color:var(--neutral-600);border:1.5px solid var(--neutral-200); }
+  .btn-secondary:hover { border-color:var(--green-400);color:var(--green-700); }
+
+  /* TOAST */
+  .toast-container { position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:999; }
+  .toast { display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:14px;font-weight:500;animation:toastIn 0.3s ease;max-width:360px; }
+  .toast.success { background:var(--green-800);color:var(--white); }
+  .toast.error   { background:#7c1f1f;color:var(--white); }
+  @keyframes toastIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+
+  /* PROGRESS */
+  .progress-bar-wrap { height:3px;background:var(--neutral-200);position:fixed;top:var(--header-h);left:var(--nav-width);right:0;z-index:80; }
+  .progress-bar-fill { height:100%;background:var(--gold-500);transition:width 0.4s ease; }
+
+  /* SCRIPT URL BANNER */
+  .config-banner { background:var(--gold-100);border:1.5px solid var(--gold-400);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:24px;font-size:13px;color:#7a5c10;display:flex;align-items:flex-start;gap:10px; }
+  .config-banner.hidden { display:none; }
+
+  @media (max-width:768px) {
+    .nav-pane { display:none; }
+    .main-content { margin-left:0;padding:16px; }
+    .col-2,.col-3 { grid-template-columns:1fr; }
+    .form-body { padding:20px; }
+    .form-footer { flex-direction:column;gap:12px; }
+    .progress-bar-wrap { left:0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-icon">🌽</div>
+  <div>
+    <div class="header-title">ระบบเก็บข้อมูลเกษตรกรผู้ปลูกข้าวโพดเลี้ยงสัตว์</div>
+    <div class="header-subtitle">Farmer Data Collection System</div>
+  </div>
+  <div class="header-id-badge" id="headerFarmerID">กำลังสร้าง ID...</div>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressBar" style="width:11%"></div>
+</div>
+
+<div class="app-layout">
+
+  <!-- NAV -->
+  <nav class="nav-pane">
+    <div class="nav-label">ส่วนที่</div>
+    <div class="nav-item active" data-section="1"><span class="nav-num">1</span>ข้อมูลเกษตรกร</div>
+    <div class="nav-item locked" data-section="2"><span class="nav-num">2</span>ข้อมูลการผลิต<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="3"><span class="nav-num">3</span>การเตรียมดิน<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="4"><span class="nav-num">4</span>การปลูก<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="5"><span class="nav-num">5</span>การดูแลรักษา<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="6"><span class="nav-num">6</span>การเก็บเกี่ยว<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="7"><span class="nav-num">7</span>ต้นทุนการผลิต<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="8"><span class="nav-num">8</span>การตลาด<span class="nav-lock-icon">🔒</span></div>
+    <div class="nav-item locked" data-section="9"><span class="nav-num">9</span>ปัญหาและความต้องการ<span class="nav-lock-icon">🔒</span></div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- CONFIG BANNER — จะหายเองเมื่อ SCRIPT_URL ถูกตั้งค่า -->
+    <div class="config-banner" id="configBanner">
+      ⚠️ <div>กรุณาแก้ไขค่า <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px">SCRIPT_URL</code> ในไฟล์นี้ให้เป็น URL ของ Apps Script ที่ Deploy แล้ว<br>
+      <small>เปิดไฟล์ index.html แล้วหาบรรทัด <strong>const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLdILoN4kgAz9Nk6vxgFWWl8CtxOU5E8HQNr_XHRbpN11uoA_-nlk6iKCzb98I7P2G/exec"</strong></small></div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="form-card-icon">👤</div>
+        <div>
+          <div class="form-card-title">ส่วนที่ 1 — ข้อมูลเกษตรกร</div>
+          <div class="form-card-desc">กรุณากรอกข้อมูลให้ครบถ้วน ข้อมูลที่มีเครื่องหมาย <span style="color:#ffc8c8">*</span> จำเป็นต้องกรอก</div>
+        </div>
+      </div>
+
+      <div class="form-body">
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">ข้อมูลพื้นฐาน</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-grid col-2">
+          <div class="field">
+            <label class="field-label">รหัสเกษตรกร (Farmer ID)</label>
+            <input type="text" id="farmerID" class="input-readonly" readonly placeholder="กำลังสร้างรหัส...">
+          </div>
+          <div class="field">
+            <label class="field-label">วันที่บันทึก</label>
+            <input type="text" id="timestamp" class="input-readonly" readonly>
+          </div>
+          <div class="field col-full">
+            <label class="field-label">ชื่อ-นามสกุล เกษตรกร <span class="req">*</span></label>
+            <input type="text" id="farmerName" placeholder="เช่น นายสมชาย ใจดี" autocomplete="off">
+            <span class="field-error-msg">กรุณากรอกชื่อ-นามสกุล</span>
+          </div>
+          <div class="field">
+            <label class="field-label">เบอร์โทรศัพท์ <span class="req">*</span></label>
+            <input type="tel" id="phoneNumber" placeholder="0812345678" maxlength="10">
+            <span class="field-error-msg">กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง</span>
+          </div>
+          <div class="field">
+            <label class="field-label">อายุ (ปี) <span class="req">*</span></label>
+            <input type="number" id="age" placeholder="35" min="15" max="99">
+            <span class="field-error-msg">กรุณากรอกอายุ (15–99 ปี)</span>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">ที่อยู่</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field col-full">
+            <label class="field-label">ที่อยู่ (รายละเอียด) <span class="req">*</span></label>
+            <textarea id="address" rows="2" placeholder="บ้านเลขที่ / หมู่ / ซอย / ถนน"></textarea>
+            <span class="field-error-msg">กรุณากรอกที่อยู่</span>
+          </div>
+        </div>
+
+        <div class="form-grid col-3" style="margin-top:16px">
+          <div class="field">
+            <label class="field-label">จังหวัด <span class="req">*</span></label>
+            <select id="province" onchange="onProvinceChange()">
+              <option value="">— เลือกจังหวัด —</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกจังหวัด</span>
+          </div>
+          <div class="field">
+            <label class="field-label">อำเภอ <span class="req">*</span></label>
+            <select id="amphoe" onchange="onAmphoeChange()" disabled>
+              <option value="">— เลือกอำเภอ —</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกอำเภอ</span>
+          </div>
+          <div class="field">
+            <label class="field-label">ตำบล <span class="req">*</span></label>
+            <select id="tambon" onchange="onTambonChange()" disabled>
+              <option value="">— เลือกตำบล —</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกตำบล</span>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">พิกัดภูมิศาสตร์</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="coord-group">
+          <div id="coordHint" class="coord-hint">
+            <span>📍</span><span id="coordHintText"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">Latitude <span class="req">*</span></label>
+            <input type="number" id="latitude" placeholder="13.756331" step="0.000001">
+            <span class="field-error-msg" id="latError">กรุณากรอก Latitude ในช่วงที่กำหนด</span>
+          </div>
+          <div class="field">
+            <label class="field-label">Longitude <span class="req">*</span></label>
+            <input type="number" id="longitude" placeholder="100.501762" step="0.000001">
+            <span class="field-error-msg" id="longError">กรุณากรอก Longitude ในช่วงที่กำหนด</span>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">ลักษณะพื้นที่</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-grid col-3">
+          <div class="field">
+            <label class="field-label">โซน (Zone)</label>
+            <input type="text" id="zone" placeholder="เช่น North, Central">
+          </div>
+          <div class="field">
+            <label class="field-label">ลักษณะพื้นที่ <span class="req">*</span></label>
+            <select id="topography">
+              <option value="">— เลือก —</option>
+              <option>ที่ลุ่ม</option>
+              <option>ที่ดอน</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกลักษณะพื้นที่</span>
+          </div>
+          <div class="field">
+            <label class="field-label">ความลาดชัน <span class="req">*</span></label>
+            <select id="slopeClass">
+              <option value="">— เลือก —</option>
+              <option>ที่ราบ</option>
+              <option>ลาดชันน้อย</option>
+              <option>ลาดชันปานกลาง</option>
+              <option>ลาดชันมาก</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกความลาดชัน</span>
+          </div>
+          <div class="field">
+            <label class="field-label">ความสูง (เมตร)</label>
+            <input type="number" id="elevation" placeholder="120" min="0">
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">พื้นที่เพาะปลูก</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-grid col-3">
+          <div class="field">
+            <label class="field-label">พื้นที่ทั้งหมด (ไร่) <span class="req">*</span></label>
+            <input type="number" id="totalArea" placeholder="20" min="0" step="0.5" oninput="calcRentArea()">
+            <span class="field-error-msg">กรุณากรอกพื้นที่</span>
+          </div>
+          <div class="field">
+            <label class="field-label">พื้นที่ของตนเอง (ไร่) <span class="req">*</span></label>
+            <input type="number" id="ownArea" placeholder="15" min="0" step="0.5" oninput="calcRentArea()">
+            <span class="field-error-msg">กรุณากรอกพื้นที่</span>
+          </div>
+          <div class="field">
+            <label class="field-label">พื้นที่เช่า (ไร่)</label>
+            <input type="number" id="rentArea" class="input-readonly" readonly placeholder="คำนวณอัตโนมัติ">
+            <div class="field-hint">= พื้นที่ทั้งหมด − พื้นที่ของตนเอง</div>
+          </div>
+          <div class="field">
+            <label class="field-label">พื้นที่ปลูกข้าวโพด (ไร่) <span class="req">*</span></label>
+            <input type="number" id="interviewMaizeArea" placeholder="10" min="0" step="0.5">
+            <span class="field-error-msg">กรุณากรอกพื้นที่</span>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">ประเภทที่ดิน & การศึกษา</div>
+          <div class="section-divider-line"></div>
+        </div>
+
+        <div class="form-grid col-2">
+          <div class="field">
+            <label class="field-label">ประเภทที่ดิน <span class="req">*</span></label>
+            <select id="landTenure">
+              <option value="">— เลือกประเภทที่ดิน —</option>
+              <option>โฉนดที่ดิน (น.ส.4)</option>
+              <option>สิทธิทํากิน (สทก.)</option>
+              <option>หนังสือรับรองการทําประโยชน์ (น.ส.3 / น.ส.3 ก. / น.ส.3 ข)</option>
+              <option>หนังสือแสดงการทําประโยชน์ (น.ค.3)</option>
+              <option>ใบชําระภาษีบํารุงท้องที่ (ภบท.5)</option>
+              <option>หนังสืออนุญาตให้เข้าทําประโยชน์ในเขตปฏิรูปที่ดิน (ส.ป.ก. 4-01)</option>
+              <option>หนังสือให้เข้าทําประโยชน์โดยกรมส่งเสริมสหกรณ์ (ก.ส.น.1/ก.ส.น.3/ก.ส.น.5)</option>
+              <option>แบบแจ้งการครอบครองที่ดิน (ส.ค.)</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกประเภทที่ดิน</span>
+          </div>
+          <div class="field">
+            <label class="field-label">ระดับการศึกษา <span class="req">*</span></label>
+            <select id="education">
+              <option value="">— เลือกระดับการศึกษา —</option>
+              <option>ไม่ได้เรียนหนังสือ</option>
+              <option>ประถม</option>
+              <option>ม.ต้น</option>
+              <option>ม.ปลาย / ปวช.</option>
+              <option>อนุปริญญา / ปวส.</option>
+              <option>ปริญญาตรี</option>
+              <option>สูงกว่าปริญญาตรี</option>
+            </select>
+            <span class="field-error-msg">กรุณาเลือกระดับการศึกษา</span>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">พืชชนิดอื่นๆ ที่ปลูก</div>
+          <div class="section-divider-line"></div>
+        </div>
+        <div class="checkbox-grid" id="otherCropsGroup"></div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">การเป็นสมาชิกกลุ่ม</div>
+          <div class="section-divider-line"></div>
+        </div>
+        <div class="field-hint" style="margin-bottom:10px">หากเลือก "ไม่เป็นสมาชิก" จะไม่สามารถเลือกตัวเลือกอื่นได้</div>
+        <div class="checkbox-grid" id="groupMemberGroup"></div>
+
+        <div class="section-divider">
+          <div class="section-divider-line"></div>
+          <div class="section-divider-label">ตำแหน่งทางสังคม</div>
+          <div class="section-divider-line"></div>
+        </div>
+        <div class="field-hint" style="margin-bottom:10px">หากเลือก "ไม่มีตำแหน่งใดใด" จะไม่สามารถเลือกตัวเลือกอื่นได้</div>
+        <div class="checkbox-grid" id="socialPositionGroup"></div>
+
+      </div><!-- /form-body -->
+
+      <div class="form-footer">
+        <div class="footer-info">ส่วนที่ <strong>1</strong> จาก <strong>9</strong> &nbsp;|&nbsp; ข้อมูลเกษตรกรพื้นฐาน</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="clearForm()">ล้างข้อมูล</button>
+          <button class="btn btn-primary" id="saveBtn" onclick="saveSection1()">
+            <span id="saveBtnText">บันทึกและถัดไป ›</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// =========================================================
+//  ⚙️  ตั้งค่า URL ของ Apps Script ที่ Deploy แล้วตรงนี้
+// =========================================================
+const SCRIPT_URL = "YOUR_APPS_SCRIPT_URL_HERE";
+// =========================================================
+
+// ── State ──
+let farmerID = "";
+let latBounds = null;
+let isSaving  = false;
+
+const OTHER_CROPS = ["ข้าว","มันสำปะหลัง","อ้อย","สับปะรด","ยางพารา","ปาล์มน้ำมัน","ผักต่างๆ","ไม้ผล","ถั่วเหลือง","ถั่วลิสง","ทานตะวัน","อื่นๆ"];
+const GROUP_MEMBERS = ["ไม่เป็นสมาชิก","กลุ่มเกษตรกร","ศูนย์ข้าวชุมชน","กลุ่มนาแปลงใหญ่","สหกรณ์การเกษตร","กลุ่มลูกค้า ธ.ก.ส.","กลุ่มกองทุนฟื้นฟูและพัฒนาเกษตรกร","กลุ่มแม่บ้านเกษตรกร","กลุ่มออมทรัพย์","กลุ่มเงินล้านหมู่บ้าน","กลุ่มธนาคารข้าว","อื่นๆ"];
+const SOCIAL_POSITIONS = ["ไม่มีตำแหน่งใดใด","ประธาน/กรรมการศูนย์ข้าวชุมชน","ประธาน/กรรมการนาแปลงใหญ่","ชาวนาอาสา (ข้าวอาสา)","อาสาสมัครเกษตรกร","ประธาน/กรรมการหมู่บ้าน","หมอดินอาสา","ปศุสัตว์อาสา","สมาชิก อบต.","อื่นๆ"];
+
+// ── Init ──
+window.onload = function() {
+  if (SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    document.getElementById("configBanner").classList.remove("hidden");
+  } else {
+    document.getElementById("configBanner").classList.add("hidden");
+  }
+  setTimestamp();
+  initCheckboxGroups();
+  loadFarmerID();
+  loadProvinces();
+};
+
+function setTimestamp() {
+  document.getElementById("timestamp").value = new Date().toLocaleDateString("th-TH", {
+    year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit"
+  });
+}
+
+// ── API helper using fetch() ──
+async function api(action, params = {}) {
+  const url = new URL(SCRIPT_URL);
+  url.searchParams.set("action", action);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || "API error");
+  return json.data;
+}
+
+async function apiPost(payload) {
+  const res = await fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" }
+  });
+  return await res.json();
+}
+
+// ── Farmer ID ──
+async function loadFarmerID() {
+  try {
+    document.getElementById("farmerID").value = "กำลังสร้าง...";
+    farmerID = await api("getFarmerID");
+    document.getElementById("farmerID").value = farmerID;
+    document.getElementById("headerFarmerID").textContent = farmerID;
+  } catch (e) {
+    document.getElementById("farmerID").value = "ไม่สามารถสร้าง ID";
+    showToast("โหลด Farmer ID ไม่สำเร็จ: " + e.message, "error");
+  }
+}
+
+// ── Province cascade ──
+async function loadProvinces() {
+  try {
+    const provinces = await api("getProvinces");
+    const sel = document.getElementById("province");
+    provinces.forEach(p => { const o = document.createElement("option"); o.value = o.textContent = p; sel.appendChild(o); });
+  } catch (e) { showToast("โหลดจังหวัดไม่สำเร็จ", "error"); }
+}
+
+async function onProvinceChange() {
+  const province = document.getElementById("province").value;
+  const amphoeEl = document.getElementById("amphoe");
+  const tambonEl = document.getElementById("tambon");
+  amphoeEl.innerHTML = '<option value="">— เลือกอำเภอ —</option>';
+  tambonEl.innerHTML = '<option value="">— เลือกตำบล —</option>';
+  amphoeEl.disabled = tambonEl.disabled = true;
+  latBounds = null; updateCoordHint();
+  if (!province) return;
+  try {
+    const amphoes = await api("getAmphoes", { province });
+    amphoes.forEach(a => { const o = document.createElement("option"); o.value = o.textContent = a; amphoeEl.appendChild(o); });
+    amphoeEl.disabled = false;
+  } catch (e) { showToast("โหลดอำเภอไม่สำเร็จ", "error"); }
+}
+
+async function onAmphoeChange() {
+  const province = document.getElementById("province").value;
+  const amphoe   = document.getElementById("amphoe").value;
+  const tambonEl = document.getElementById("tambon");
+  tambonEl.innerHTML = '<option value="">— เลือกตำบล —</option>';
+  tambonEl.disabled = true;
+  latBounds = null; updateCoordHint();
+  if (!amphoe) return;
+  try {
+    const tambons = await api("getTambons", { province, amphoe });
+    tambons.forEach(t => { const o = document.createElement("option"); o.value = o.textContent = t; tambonEl.appendChild(o); });
+    tambonEl.disabled = false;
+  } catch (e) { showToast("โหลดตำบลไม่สำเร็จ", "error"); }
+}
+
+async function onTambonChange() {
+  const province = document.getElementById("province").value;
+  const amphoe   = document.getElementById("amphoe").value;
+  const tambon   = document.getElementById("tambon").value;
+  if (!tambon) return;
+  try {
+    latBounds = await api("getBounds", { province, amphoe, tambon });
+    updateCoordHint();
+  } catch (e) { /* bounds optional */ }
+}
+
+function updateCoordHint() {
+  const hint = document.getElementById("coordHint");
+  const hintText = document.getElementById("coordHintText");
+  if (latBounds) {
+    hint.className = "coord-hint active";
+    hintText.textContent = `ขอบเขต: Lat ${latBounds.minLat} – ${latBounds.maxLat}  |  Long ${latBounds.minLong} – ${latBounds.maxLong}`;
+  } else {
+    hint.className = "coord-hint";
+  }
+}
+
+// ── Auto-calc rent ──
+function calcRentArea() {
+  const total = parseFloat(document.getElementById("totalArea").value) || 0;
+  const own   = parseFloat(document.getElementById("ownArea").value)   || 0;
+  const rent  = total - own;
+  document.getElementById("rentArea").value = rent >= 0 ? rent.toFixed(1) : "";
+}
+
+// ── Checkbox groups ──
+function initCheckboxGroups() {
+  buildCheckboxGroup("otherCropsGroup", OTHER_CROPS, null);
+  buildCheckboxGroup("groupMemberGroup", GROUP_MEMBERS, "ไม่เป็นสมาชิก");
+  buildCheckboxGroup("socialPositionGroup", SOCIAL_POSITIONS, "ไม่มีตำแหน่งใดใด");
+}
+function buildCheckboxGroup(containerId, options, exclusiveNone) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = "";
+  options.forEach(opt => {
+    const lbl = document.createElement("label");
+    lbl.className = "checkbox-item";
+    lbl.innerHTML = `<input type="checkbox" value="${opt}"> ${opt}`;
+    lbl.querySelector("input").addEventListener("change", e => onCbChange(c, exclusiveNone, e.target));
+    c.appendChild(lbl);
+  });
+}
+function onCbChange(container, exclusiveNone, cb) {
+  if (!exclusiveNone) { cb.closest(".checkbox-item").classList.toggle("checked", cb.checked); return; }
+  const all = container.querySelectorAll("input");
+  const noneCb = [...all].find(x => x.value === exclusiveNone);
+  if (cb.value === exclusiveNone && cb.checked) {
+    all.forEach(x => { if (x !== cb) { x.checked = false; x.closest(".checkbox-item").classList.remove("checked"); } });
+  } else if (cb.value !== exclusiveNone && cb.checked && noneCb) {
+    noneCb.checked = false; noneCb.closest(".checkbox-item").classList.remove("checked");
+  }
+  cb.closest(".checkbox-item").classList.toggle("checked", cb.checked);
+}
+function getChecked(id) { return [...document.querySelectorAll(`#${id} input:checked`)].map(c => c.value); }
+
+// ── Validation ──
+function checkField(id, ok) {
+  const el = document.getElementById(id);
+  el.closest(".field").classList.toggle("error", !ok);
+  return ok;
+}
+
+// ── Save ──
+async function saveSection1() {
+  if (isSaving) return;
+  if (SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") { showToast("กรุณาตั้งค่า SCRIPT_URL ก่อน", "error"); return; }
+
+  const age = parseInt(document.getElementById("age").value);
+  const lat  = parseFloat(document.getElementById("latitude").value);
+  const lng  = parseFloat(document.getElementById("longitude").value);
+
+  let latOk = !isNaN(lat);
+  let lngOk = !isNaN(lng);
+  if (latBounds && latOk) {
+    latOk = lat >= parseFloat(latBounds.minLat) && lat <= parseFloat(latBounds.maxLat);
+    document.getElementById("latError").textContent = `กรุณากรอกค่าในช่วง ${latBounds.minLat} – ${latBounds.maxLat}`;
+  }
+  if (latBounds && lngOk) {
+    lngOk = lng >= parseFloat(latBounds.minLong) && lng <= parseFloat(latBounds.maxLong);
+    document.getElementById("longError").textContent = `กรุณากรอกค่าในช่วง ${latBounds.minLong} – ${latBounds.maxLong}`;
+  }
+
+  const valid = [
+    checkField("farmerName", document.getElementById("farmerName").value.trim() !== ""),
+    checkField("phoneNumber", /^0\d{8,9}$/.test(document.getElementById("phoneNumber").value.trim())),
+    checkField("age", !isNaN(age) && age >= 15 && age <= 99),
+    checkField("address", document.getElementById("address").value.trim() !== ""),
+    checkField("province", document.getElementById("province").value !== ""),
+    checkField("amphoe", document.getElementById("amphoe").value !== ""),
+    checkField("tambon", document.getElementById("tambon").value !== ""),
+    checkField("latitude", latOk),
+    checkField("longitude", lngOk),
+    checkField("topography", document.getElementById("topography").value !== ""),
+    checkField("slopeClass", document.getElementById("slopeClass").value !== ""),
+    checkField("totalArea", parseFloat(document.getElementById("totalArea").value) > 0),
+    checkField("ownArea", document.getElementById("ownArea").value !== "" && parseFloat(document.getElementById("ownArea").value) >= 0),
+    checkField("interviewMaizeArea", parseFloat(document.getElementById("interviewMaizeArea").value) > 0),
+    checkField("landTenure", document.getElementById("landTenure").value !== ""),
+    checkField("education", document.getElementById("education").value !== ""),
+  ].every(Boolean);
+
+  if (!valid) {
+    showToast("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน", "error");
+    document.querySelector(".field.error")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  isSaving = true;
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true;
+  document.getElementById("saveBtnText").innerHTML = '<span class="spinner"></span> กำลังบันทึก...';
+
+  const payload = {
+    Farmer_ID: farmerID,
+    Farmer_Name: document.getElementById("farmerName").value.trim(),
+    Phone_Number: document.getElementById("phoneNumber").value.trim(),
+    Age: age,
+    Address: document.getElementById("address").value.trim(),
+    Address_Province: document.getElementById("province").value,
+    Address_Amphoe: document.getElementById("amphoe").value,
+    Address_Tambon: document.getElementById("tambon").value,
+    Latitude: lat, Longitude: lng,
+    Zone: document.getElementById("zone").value.trim(),
+    Topography: document.getElementById("topography").value,
+    SlopeClass: document.getElementById("slopeClass").value,
+    Elevation_m: parseFloat(document.getElementById("elevation").value) || "",
+    TotalArea_rai: parseFloat(document.getElementById("totalArea").value),
+    OwnArea_rai: parseFloat(document.getElementById("ownArea").value),
+    RentArea_rai: parseFloat(document.getElementById("rentArea").value) || 0,
+    OtherCrops: getChecked("otherCropsGroup"),
+    InterviewMaizeArea_rai: parseFloat(document.getElementById("interviewMaizeArea").value),
+    LandTenure: document.getElementById("landTenure").value,
+    Education: document.getElementById("education").value,
+    Group_Member: getChecked("groupMemberGroup"),
+    Social_Position: getChecked("socialPositionGroup")
+  };
+
+  try {
+    const result = await apiPost(payload);
+    isSaving = false; btn.disabled = false;
+    document.getElementById("saveBtnText").textContent = "บันทึกและถัดไป ›";
+    if (result.success) {
+      showToast("✅ บันทึกสำเร็จ! Farmer ID: " + result.farmerID, "success");
+      document.querySelector('[data-section="1"]').classList.add("done");
+      document.querySelector('[data-section="1"] .nav-num').textContent = "✓";
+    } else {
+      showToast("บันทึกไม่สำเร็จ: " + result.error, "error");
+    }
+  } catch (e) {
+    isSaving = false; btn.disabled = false;
+    document.getElementById("saveBtnText").textContent = "บันทึกและถัดไป ›";
+    showToast("เกิดข้อผิดพลาด: " + e.message, "error");
+  }
+}
+
+// ── Clear ──
+function clearForm() {
+  if (!confirm("ต้องการล้างข้อมูลทั้งหมดในส่วนนี้ใช่หรือไม่?")) return;
+  ["farmerName","phoneNumber","age","address","zone","elevation","totalArea","ownArea","rentArea","interviewMaizeArea","latitude","longitude"].forEach(id => document.getElementById(id).value = "");
+  ["province","amphoe","tambon","topography","slopeClass","landTenure","education"].forEach(id => document.getElementById(id).selectedIndex = 0);
+  document.getElementById("amphoe").disabled = document.getElementById("tambon").disabled = true;
+  latBounds = null; updateCoordHint();
+  document.querySelectorAll(".checkbox-item").forEach(el => { el.classList.remove("checked"); el.querySelector("input").checked = false; });
+  document.querySelectorAll(".field.error").forEach(el => el.classList.remove("error"));
+}
+
+// ── Toast ──
+function showToast(msg, type = "success") {
+  const t = document.createElement("div");
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.getElementById("toastContainer").appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+</script>
+</body>
+</html>
